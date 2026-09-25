@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Network Lab</title>
+  <meta name="description" content="Interactive network analysis and graph machine learning: centrality, community detection, robustness, link prediction and a from-scratch GCN.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg stroke='%2352514e' stroke-width='2'%3E%3Cline x1='8' y1='9' x2='23' y2='7'/%3E%3Cline x1='8' y1='9' x2='15' y2='24'/%3E%3Cline x1='23' y1='7' x2='15' y2='24'/%3E%3C/g%3E%3Ccircle cx='8' cy='9' r='5' fill='%232a78d6'/%3E%3Ccircle cx='23' cy='7' r='4' fill='%23eb6834'/%3E%3Ccircle cx='15' cy='24' r='5' fill='%231baf7a'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <g stroke="var(--ink-2)" stroke-width="2"><line x1="8" y1="9" x2="23" y2="7"/><line x1="8" y1="9" x2="15" y2="24"/><line x1="23" y1="7" x2="15" y2="24"/></g>
+        <circle cx="8" cy="9" r="5" fill="var(--s1)"/><circle cx="23" cy="7" r="4" fill="var(--s2)"/><circle cx="15" cy="24" r="5" fill="var(--s3)"/>
+      </svg>
+      <span>Network Lab</span>
+      <span class="tag">graph analytics &amp; graph ML, live</span>
+    </div>
+    <nav>
+      <a href="/docs" target="_blank" rel="noopener">API docs</a>
+      <a id="repo-link" href="https://github.com/emilyjhuang/Graphing" target="_blank" rel="noopener">Source</a>
+      <button class="icon-btn" id="theme-toggle" title="Toggle light/dark">◐ Theme</button>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <div class="group">
+        <h3>Dataset</h3>
+        <div class="field"><select id="dataset"></select></div>
+        <p class="desc" id="dataset-desc"></p>
+        <div id="dataset-params"></div>
+        <div class="field" id="custom-field" hidden>
+          <textarea id="custom-edges" spellcheck="false" placeholder="alice,bob&#10;bob,carol,2.5&#10;carol,alice&#10;# labels&#10;alice,red&#10;bob,red&#10;carol,blue"></textarea>
+        </div>
+        <button class="btn primary block" id="load">Load graph</button>
+      </div>
+
+      <div class="group">
+        <h3>Encoding</h3>
+        <div class="field"><span class="label">Node size</span>
+          <select id="size-by">
+            <option value="degree">Degree centrality</option>
+            <option value="betweenness">Betweenness centrality</option>
+            <option value="closeness">Closeness centrality</option>
+            <option value="eigenvector">Eigenvector centrality</option>
+            <option value="pagerank" selected>PageRank</option>
+            <option value="core">k-core number</option>
+            <option value="clustering">Local clustering</option>
+            <option value="none">Uniform</option>
+          </select>
+        </div>
+        <div class="field"><span class="label">Node colour</span>
+          <select id="color-by">
+            <option value="community" selected>Detected community</option>
+            <option value="truth">Ground-truth label</option>
+            <option value="gcn">GCN prediction</option>
+            <option value="betweenness">Betweenness (heat)</option>
+            <option value="pagerank">PageRank (heat)</option>
+            <option value="core">k-core (heat)</option>
+          </select>
+        </div>
+        <div class="field"><span class="label">Community algorithm</span>
+          <select id="community"></select>
+        </div>
+        <label class="check"><input type="checkbox" id="show-labels"> Label every node</label>
+      </div>
+
+      <div class="group">
+        <h3>Selected node</h3>
+        <div id="inspector" class="inspector"><span class="muted">Click a node to inspect it.</span></div>
+      </div>
+    </aside>
+
+    <section class="canvas">
+      <svg id="graph" role="img" aria-label="Network visualisation"></svg>
+      <div class="canvas-chrome">
+        <div class="legend" id="legend"></div>
+        <div class="canvas-tools">
+          <button class="btn" id="reheat" title="Re-run the force layout">↻ Layout</button>
+          <button class="btn" id="fit" title="Zoom to fit">⤢ Fit</button>
+        </div>
+      </div>
+      <div class="canvas-footer">
+        <span class="hint">Scroll to zoom · drag to pan · drag nodes · click to inspect</span>
+        <span class="status-pill" id="status"></span>
+      </div>
+      <div class="loading" id="loading" hidden><div><div class="spinner"></div><span id="loading-text">Computing…</span></div></div>
+    </section>
+
+    <section class="panel">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" data-tab="overview" aria-selected="true">Overview</button>
+        <button class="tab" role="tab" data-tab="centrality">Centrality</button>
+        <button class="tab" role="tab" data-tab="communities">Communities</button>
+        <button class="tab" role="tab" data-tab="paths">Paths</button>
+        <button class="tab" role="tab" data-tab="robustness">Robustness</button>
+        <button class="tab" role="tab" data-tab="links">Links</button>
+        <button class="tab" role="tab" data-tab="gcn">GCN</button>
+      </div>
+      <div class="tab-body" id="tab-overview"></div>
+      <div class="tab-body" id="tab-centrality" hidden></div>
+      <div class="tab-body" id="tab-communities" hidden></div>
+      <div class="tab-body" id="tab-paths" hidden></div>
+      <div class="tab-body" id="tab-robustness" hidden></div>
+      <div class="tab-body" id="tab-links" hidden></div>
+      <div class="tab-body" id="tab-gcn" hidden></div>
+    </section>
+  </main>
+
+  <div class="tooltip" id="tooltip" hidden></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script type="module" src="/static/js/main.js"></script>
+</body>
+</html>
