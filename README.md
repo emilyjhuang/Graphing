@@ -4,7 +4,7 @@ An interactive web app for **network analysis and graph machine learning**. You 
 
 **Stack:** Python · FastAPI · NetworkX · NumPy/SciPy · scikit-learn · D3.js. There is no frontend build step, and it deploys to Render with one file.
 
-![Link prediction on Les Misérables](docs/link-prediction.png)
+https://network-lab-ybxh.onrender.com
 
 ## What it does
 
