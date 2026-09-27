@@ -2,7 +2,7 @@
 
 An interactive web app for **network analysis and graph machine learning**. You can load a real-world or synthetic network (or paste your own edge list) and explore it through centrality, community detection, shortest paths, attack simulations, supervised link prediction, and a Graph Convolutional Network written from scratch in NumPy.
 
-**Stack:** Python · FastAPI · NetworkX · NumPy/SciPy · scikit-learn · D3.js. There is no frontend build step, and it deploys to Render with one file.
+**Stack:** Python · FastAPI · NetworkX · NumPy/SciPy · scikit-learn · D3.js.
 
 https://network-lab-ybxh.onrender.com
 
